@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Municipal Pilar de la Horadada</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#2c5f7d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Pilar Municipal">
+    <meta name="msapplication-TileImage" content="icons/icon-144x144.png">
+    <meta name="msapplication-TileColor" content="#2c5f7d">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Apple Touch Icon -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32x32.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c5f7d, #1a4a5c);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+        }
+
+        .language-selector {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .language-selector select {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 20px;
+            background: white;
+            color: #2c5f7d;
+            font-weight: bold;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #2c5f7d;
+        }
+
+        /* PWA Install Button */
+        .install-prompt {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #3498db;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 1000;
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+            border: none;
+            font-size: 14px;
+        }
+
+        .install-prompt.show {
+            transform: translateX(0);
+        }
+
+        .install-prompt:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        /* Offline indicator */
+        .offline-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #e74c3c;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 1001;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .offline-indicator.show {
+            transform: translateY(0);
+        }
+
+        .navigation {
+            background: #34495e;
+            padding: 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs {
+            display: flex;
+            min-width: max-content;
+        }
+
+        .nav-tab {
+            padding: 15px 20px;
+            color: white;
+            text-decoration: none;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+
+        .nav-tab:hover, .nav-tab.active {
+            background: #3f566a;
+            border-bottom-color: #3498db;
+        }
+
+        .nav-tab:active {
+            background: #2c3e50;
+        }
+
+        .content {
+            padding: 20px;
+            min-height: 600px;
+            touch-action: pan-y;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .news-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            touch-action: manipulation;
+        }
+
+        .news-card:hover, .news-card:active {
+            transform: translateY(-5px);
+        }
+
+        .news-date {
+            color: #6c757d;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .news-title {
+            color: #2c5f7d;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .events-calendar {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .calendar-header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2c5f7d;
+            margin-bottom: 20px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+            touch-action: manipulation;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .calendar-day:hover, .calendar-day:active {
+            background: #e7f3ff;
+        }
+
+        .calendar-day.event-day {
+            background: #3498db;
+            color: white;
+        }
+
+        .event-list {
+            max-height: 400px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .event-item {
+            padding: 15px;
+            border-left: 4px solid #3498db;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .emergency-contacts {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .contact-card {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            touch-action: manipulation;
+            user-select: none;
+        }
+
+        .contact-card.police {
+            background: #3498db;
+        }
+
+        .contact-card.municipal {
+            background: #27ae60;
+        }
+
+        .contact-card.health {
+            background: #e67e22;
+        }
+
+        .contact-card:hover, .contact-card:active {
+            transform: scale(1.05);
+        }
+
+        .contact-number {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .tourism-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .tourism-card {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        .tourism-card:hover, .tourism-card:active {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .tourism-card.mil-palmeras {
+            background: linear-gradient(135deg, #fd79a8, #e84393);
+        }
+
+        .tourism-card.pinar {
+            background: linear-gradient(135deg, #00cec9, #00b894);
+        }
+
+        .chatbot-container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .chatbot-header {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .chat-send {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            touch-action: manipulation;
+            font-size: 16px;
+        }
+
+        .chat-send:active {
+            background: #2980b9;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 15px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: #3498db;
+            color: white;
+            margin-left: auto;
+        }
+
+        .message.bot {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .map-container {
+            height: 500px;
+            background: #e9ecef;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+
+        .business-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .business-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-left: 4px solid #3498db;
+        }
+
+        .blog-post {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .notification-settings {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .neighborhood-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .neighborhood-card {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+            touch-action: manipulation;
+        }
+
+        .neighborhood-card:hover, .neighborhood-card.selected, .neighborhood-card:active {
+            border-color: #3498db;
+            background: #e7f3ff;
+        }
+
+        .btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+            touch-action: manipulation;
+        }
+
+        .btn:hover, .btn:active {
+            background: #2980b9;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Better mobile experience */
+        @media (max-width: 768px) {
+            .header {
+                padding: 15px;
+            }
+            
+            .language-selector {
+                position: static;
+                text-align: center;
+                margin-top: 15px;
+            }
+            
+            .navigation {
+                padding: 0;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+            
+            .news-grid, .tourism-sections, .emergency-contacts {
+                grid-template-columns: 1fr;
+            }
+
+            .chat-input, .chat-send {
+                font-size: 16px;
+                padding: 12px;
+            }
+
+            .calendar-day {
+                min-height: 35px;
+                padding: 8px;
+                font-size: 14px;
+            }
+
+            .install-prompt {
+                bottom: 10px;
+                right: 10px;
+                font-size: 12px;
+                padding: 12px 16px;
+            }
+        }
+
+        /* Prevent zoom on input focus */
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+            select, textarea, input[type="text"], input[type="password"], 
+            input[type="datetime"], input[type="datetime-local"], 
+            input[type="date"], input[type="month"], input[type="time"], 
+            input[type="week"], input[type="number"], input[type="email"], 
+            input[type="url"] { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offlineIndicator">
+        🔌 Sin conexión - Algunas funciones pueden estar limitadas
+    </div>
+
+    <!-- Install Prompt -->
+    <button class="install-prompt" id="installPrompt">
+        📱 Instalar App
+    </button>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="language-selector">
+                <select id="languageSelect" onchange="changeLanguage()">
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                    <option value="de">🇩🇪 Deutsch</option>
+                    <option value="fr">🇫🇷 Français</option>
+                </select>
+            </div>
+            
+            <div class="logo-section">
+                <div class="logo">🏛️</div>
+                <div>
+                    <h1 id="appTitle">Pilar de la Horadada</h1>
+                    <p id="appSubtitle">App Municipal Oficial</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="navigation">
+            <div class="nav-tabs">
+                <a href="#" class="nav-tab active" data-section="news" id="navNews">📰 Noticias</a>
+                <a href="#" class="nav-tab" data-section="events" id="navEvents">📅 Eventos</a>
+                <a href="#" class="nav-tab" data-section="map" id="navMap">🗺️ Mapa Local</a>
+                <a href="#" class="nav-tab" data-section="tourism" id="navTourism">🏖️ Turismo</a>
+                <a href="#" class="nav-tab" data-section="emergency" id="navEmergency">🚨 Urgencias</a>
+                <a href="#" class="nav-tab" data-section="chatbot" id="navChatbot">💬 Consultas</a>
+                <a href="#" class="nav-tab" data-section="community" id="navCommunity">👥 Comunidad</a>
+                <a href="#" class="nav-tab" data-section="notifications" id="navNotifications">🔔 Avisos</a>
+            </div>
+        </nav>
+
+        <!-- Content Sections -->
+        <div class="content">
+            <!-- Loading Spinner -->
+            <div class="loading-spinner" id="loadingSpinner"></div>
+
+            <!-- Noticias Section -->
+            <section id="news" class="section active">
+                <h2 class="section-title" id="newsTitle">📰 Noticias y Comunicados Oficiales</h2>
+                <div class="news-grid">
+                    <div class="news-card">
+                        <div class="news-date">30 Agosto 2025</div>
+                        <div class="news-title">9º Festival Internacional de Cine: CORTOPILAR</div>
+                        <p>Ya están abiertas las inscripciones para el Festival de Cine de Pilar de la Horadada. ¡Participa con tu cortometraje!</p>
+                    </div>
+                    <div class="news-card">
+                        <div class="news-date">28 Agosto 2025</div>
+                        <div class="news-title">Nuevas Mejoras en el Sistema de Recogida de Residuos</div>
+                        <p>Se implementan nuevos horarios y rutas optimizadas para mejorar el servicio municipal.</p>
+                    </div>
+                    <div class="news-card">
+                        <div class="news-date">25 Agosto 2025</div>
+                        <div class="news-title">Programas "Ociopinar" y "Conexión Juvenil" Finalizados</div>
+                        <p>Gran éxito de participación en los programas de ocio juvenil del 30 de junio al 25 de julio.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Eventos Section -->
+            <section id="events" class="section">
+                <h2 class="section-title" id="eventsTitle">📅 Agenda de Eventos y Actividades</h2>
+                <div class="events-calendar">
+                    <div class="calendar-header">Agosto 2025</div>
+                    <div class="calendar-grid">
+                        <div class="calendar-day">1</div>
+                        <div class="calendar-day">2</div>
+                        <div class="calendar-day">3</div>
+                        <div class="calendar-day">4</div>
+                        <div class="calendar-day">5</div>
+                        <div class="calendar-day">6</div>
+                        <div class="calendar-day">7</div>
+                        <div class="calendar-day">8</div>
+                        <div class="calendar-day">9</div>
+                        <div class="calendar-day">10</div>
+                        <div class="calendar-day">11</div>
+                        <div class="calendar-day">12</div>
+                        <div class="calendar-day">13</div>
+                        <div class="calendar-day">14</div>
+                        <div class="calendar-day event-day">15</div>
+                        <div class="calendar-day">16</div>
+                        <div class="calendar-day">17</div>
+                        <div class="calendar-day">18</div>
+                        <div class="calendar-day">19</div>
+                        <div class="calendar-day">20</div>
+                        <div class="calendar-day">21</div>
+                        <div class="calendar-day event-day">22</div>
+                        <div class="calendar-day">23</div>
+                        <div class="calendar-day">24</div>
+                        <div class="calendar-day">25</div>
+                        <div class="calendar-day">26</div>
+                        <div class="calendar-day">27</div>
+                        <div class="calendar-day">28</div>
+                        <div class="calendar-day">29</div>
+                        <div class="calendar-day event-day">30</div>
+                        <div class="calendar-day">31</div>
+                    </div>
+                    <div class="event-list">
+                        <div class="event-item">
+                            <strong>15 Agosto - Fiesta de la Virgen</strong><br>
+                            Celebración tradicional en la Iglesia del Pilar
+                        </div>
+                        <div class="event-item">
+                            <strong>22 Agosto - Concierto de Verano</strong><br>
+                            Plaza Campoamor - 21:00h - Entrada gratuita
+                        </div>
+                        <div class="event-item">
+                            <strong>30 Agosto - Festival de Cine</strong><br>
+                            CORTOPILAR - Inscripciones abiertas
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Mapa Section -->
+            <section id="map" class="section">
+                <h2 class="section-title" id="mapTitle">🗺️ Mapa de Comercios Locales y Servicios</h2>
+                <div class="map-container">
+                    🗺️ Mapa Interactivo de Servicios<br>
+                    <small>(Integración con Google Maps)</small>
+                </div>
+                <div class="business-grid">
+                    <div class="business-card">
+                        <h4>🏥 Centro de Salud</h4>
+                        <p>Av. de Alicante, 12</p>
+                        <p>📞 966 767 000</p>
+                    </div>
+                    <div class="business-card">
+                        <h4>🏪 Mercado Municipal</h4>
+                        <p>Plaza del Mercado</p>
+                        <p>📞 966 767 100</p>
+                    </div>
+                    <div class="business-card">
+                        <h4>⛽ Gasolinera BP</h4>
+                        <p>Carretera Nacional 332</p>
+                        <p>📞 966 767 200</p>
+                    </div>
+                    <div class="business-card">
+                        <h4>🏦 Banco Santander</h4>
+                        <p>Calle Mayor, 45</p>
+                        <p>📞 966 767 300</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Turismo Section -->
+            <section id="tourism" class="section">
+                <h2 class="section-title" id="tourismTitle">🏖️ Apartado Turístico Interactivo</h2>
+                <div class="tourism-sections">
+                    <div class="tourism-card" onclick="showTourismDetail('torre')">
+                        <h3>Torre de la Horadada</h3>
+                        <p>🏰 Torre histórica del siglo XVI</p>
+                        <p>🏖️ Playas de bandera azul</p>
+                        <p>🍽️ Restaurantes frente al mar</p>
+                    </div>
+                    <div class="tourism-card mil-palmeras" onclick="showTourismDetail('mil')">
+                        <h3>Mil Palmeras</h3>
+                        <p>🌴 Zona residencial premium</p>
+                        <p>🏖️ Playa familiar</p>
+                        <p>🛒 Centro comercial</p>
+                    </div>
+                    <div class="tourism-card pinar" onclick="showTourismDetail('pinar')">
+                        <h3>Pinar de Campoverde</h3>
+                        <p>🌲 Entorno natural</p>
+                        <p>🏡 Urbanización tranquila</p>
+                        <p>⛳ Campo de golf</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Urgencias Section -->
+            <section id="emergency" class="section">
+                <h2 class="section-title" id="emergencyTitle">🚨 Contactos de Urgencias</h2>
+                <div class="emergency-contacts">
+                    <div class="contact-card" onclick="callEmergency('112')">
+                        <h3>🚨 EMERGENCIAS</h3>
+                        <div class="contact-number">112</div>
+                        <p>Emergencias generales</p>
+                    </div>
+                    <div class="contact-card police" onclick="callEmergency('092')">
+                        <h3>👮 POLICÍA LOCAL</h3>
+                        <div class="contact-number">092</div>
+                        <p>966 767 001</p>
+                    </div>
+                    <div class="contact-card municipal" onclick="callEmergency('966767068')">
+                        <h3>🏛️ AYUNTAMIENTO</h3>
+                        <div class="contact-number">966 767 068</div>
+                        <p>Información municipal</p>
+                    </div>
+                    <div class="contact-card health" onclick="callEmergency('061')">
+                        <h3>🚑 SANITARIO</h3>
+                        <div class="contact-number">061</div>
+                        <p>Urgencias sanitarias</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Chatbot Section -->
+            <section id="chatbot" class="section">
+                <h2 class="section-title" id="chatbotTitle">💬 Asistente Virtual Multilingüe</h2>
+                <div class="chatbot-container">
+                    <div class="chatbot-header" id="chatHeader">
+                        🤖 Asistente Municipal - Disponible en 4 idiomas
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="message bot" id="welcomeMessage">
+                            ¡Hola! Soy tu asistente virtual municipal. Puedo ayudarte con información sobre servicios, trámites, eventos y turismo. ¿En qué puedo ayudarte hoy?
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" class="chat-input" id="chatInput" placeholder="Escribe tu consulta aquí...">
+                        <button class="chat-send" onclick="sendMessage()" id="chatSendBtn">Enviar</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Community Section -->
+            <section id="community" class="section">
+                <h2 class="section-title" id="communityTitle">👥 Blog Comunitario y Participación Ciudadana</h2>
+                <div class="blog-post">
+                    <h3>💬 Mejoras propuestas para el Parque Central</h3>
+                    <p><small>Publicado por María García - 28 Agosto 2025</small></p>
+                    <p>Los vecinos del barrio centro proponen la instalación de nuevos juegos infantiles y zonas de ejercicio al aire libre...</p>
+                    <p><strong>💬 12 comentarios</strong> | <strong>👍 45 me gusta</strong></p>
+                </div>
+                <div class="blog-post">
+                    <h3>🌱 Iniciativa de Reciclaje Comunitario</h3>
+                    <p><small>Publicado por Ayuntamiento - 25 Agosto 2025</small></p>
+                    <p>Nuevo programa de reciclaje con puntos de recogida selectiva en todos los barrios. ¡Participa y cuida nuestro entorno!</p>
+                    <p><strong>💬 8 comentarios</strong> | <strong>👍 67 me gusta</strong></p>
+                </div>
+                <button class="btn<button class="btn" onclick="createPost()" id="createPostBtn">✍️ Crear Nueva Publicación</button>
+           </section>
+
+           <!-- Notifications Section -->
+           <section id="notifications" class="section">
+               <h2 class="section-title" id="notificationsTitle">🔔 Notificaciones Personalizadas por Barrio</h2>
+               <div class="notification-settings">
+                   <h3 id="selectNeighborhoodTitle">Selecciona tu barrio/zona:</h3>
+                   <div class="neighborhood-selector">
+                       <div class="neighborhood-card" onclick="selectNeighborhood('centro')">
+                           <h4>🏛️ Centro</h4>
+                           <p>Zona histórica</p>
+                       </div>
+                       <div class="neighborhood-card" onclick="selectNeighborhood('torre')">
+                           <h4>🏰 Torre de la Horadada</h4>
+                           <p>Costa y puerto</p>
+                       </div>
+                       <div class="neighborhood-card" onclick="selectNeighborhood('mil')">
+                           <h4>🌴 Mil Palmeras</h4>
+                           <p>Zona residencial</p>
+                       </div>
+                       <div class="neighborhood-card" onclick="selectNeighborhood('pinar')">
+                           <h4>🌲 Pinar de Campoverde</h4>
+                           <p>Zona verde</p>
+                       </div>
+                   </div>
+                   <h3 id="notificationTypesTitle">Tipos de notificaciones:</h3>
+                   <div style="margin: 20px 0;">
+                       <label><input type="checkbox" checked> 📰 Noticias municipales</label><br>
+                       <label><input type="checkbox" checked> 📅 Eventos y actividades</label><br>
+                       <label><input type="checkbox"> 🚧 Cortes de tráfico</label><br>
+                       <label><input type="checkbox"> 🚰 Cortes de agua</label><br>
+                       <label><input type="checkbox"> 🗑️ Cambios en recogida de basura</label><br>
+                       <label><input type="checkbox"> ⚠️ Alertas meteorológicas</label><br>
+                   </div>
+                   <button class="btn" onclick="saveNotificationSettings()" id="saveNotificationsBtn">💾 Guardar Preferencias</button>
+               </div>
+           </section>
+       </div>
+   </div>
+
+   <script>
+       // PWA Variables
+       let deferredPrompt;
+       let isInstalled = false;
+
+       // Service Worker Registration
+       if ('serviceWorker' in navigator) {
+           window.addEventListener('load', () => {
+               navigator.serviceWorker.register('sw.js')
+                   .then((registration) => {
+                       console.log('SW registered: ', registration);
+                   })
+                   .catch((registrationError) => {
+                       console.log('SW registration failed: ', registrationError);
+                   });
+           });
+       }
+
+       // Install Prompt
+       window.addEventListener('beforeinstallprompt', (e) => {
+           e.preventDefault();
+           deferredPrompt = e;
+           showInstallPrompt();
+       });
+
+       function showInstallPrompt() {
+           const installButton = document.getElementById('installPrompt');
+           if (!isInstalled) {
+               installButton.classList.add('show');
+           }
+       }
+
+       document.getElementById('installPrompt').addEventListener('click', async () => {
+           if (deferredPrompt) {
+               deferredPrompt.prompt();
+               const { outcome } = await deferredPrompt.userChoice;
+               console.log(`User response to the install prompt: ${outcome}`);
+               deferredPrompt = null;
+               hideInstallPrompt();
+           }
+       });
+
+       function hideInstallPrompt() {
+           const installButton = document.getElementById('installPrompt');
+           installButton.classList.remove('show');
+       }
+
+       // Check if app is installed
+       window.addEventListener('appinstalled', () => {
+           isInstalled = true;
+           hideInstallPrompt();
+           console.log('PWA was installed');
+       });
+
+       // Online/Offline Detection
+       function updateOnlineStatus() {
+           const offlineIndicator = document.getElementById('offlineIndicator');
+           if (navigator.onLine) {
+               offlineIndicator.classList.remove('show');
+           } else {
+               offlineIndicator.classList.add('show');
+           }
+       }
+
+       window.addEventListener('online', updateOnlineStatus);
+       window.addEventListener('offline', updateOnlineStatus);
+
+       // Translations object
+       const translations = {
+           es: {
+               appTitle: "Pilar de la Horadada",
+               appSubtitle: "App Municipal Oficial",
+               navNews: "📰 Noticias",
+               navEvents: "📅 Eventos", 
+               navMap: "🗺️ Mapa Local",
+               navTourism: "🏖️ Turismo",
+               navEmergency: "🚨 Urgencias",
+               navChatbot: "💬 Consultas",
+               navCommunity: "👥 Comunidad",
+               navNotifications: "🔔 Avisos",
+               newsTitle: "📰 Noticias y Comunicados Oficiales",
+               eventsTitle: "📅 Agenda de Eventos y Actividades",
+               mapTitle: "🗺️ Mapa de Comercios Locales y Servicios",
+               tourismTitle: "🏖️ Apartado Turístico Interactivo",
+               emergencyTitle: "🚨 Contactos de Urgencias",
+               chatbotTitle: "💬 Asistente Virtual Multilingüe",
+               communityTitle: "👥 Blog Comunitario y Participación Ciudadana",
+               notificationsTitle: "🔔 Notificaciones Personalizadas por Barrio",
+               chatHeader: "🤖 Asistente Municipal - Disponible en 4 idiomas",
+               welcomeMessage: "¡Hola! Soy tu asistente virtual municipal. Puedo ayudarte con información sobre servicios, trámites, eventos y turismo. ¿En qué puedo ayudarte hoy?",
+               chatSendBtn: "Enviar",
+               createPostBtn: "✍️ Crear Nueva Publicación",
+               selectNeighborhoodTitle: "Selecciona tu barrio/zona:",
+               notificationTypesTitle: "Tipos de notificaciones:",
+               saveNotificationsBtn: "💾 Guardar Preferencias"
+           },
+           en: {
+               appTitle: "Pilar de la Horadada",
+               appSubtitle: "Official Municipal App",
+               navNews: "📰 News",
+               navEvents: "📅 Events",
+               navMap: "🗺️ Local Map",
+               navTourism: "🏖️ Tourism",
+               navEmergency: "🚨 Emergency",
+               navChatbot: "💬 Inquiries",
+               navCommunity: "👥 Community",
+               navNotifications: "🔔 Alerts",
+               newsTitle: "📰 News and Official Communications",
+               eventsTitle: "📅 Events and Activities Calendar",
+               mapTitle: "🗺️ Local Businesses and Services Map",
+               tourismTitle: "🏖️ Interactive Tourism Section",
+               emergencyTitle: "🚨 Emergency Contacts",
+               chatbotTitle: "💬 Multilingual Virtual Assistant",
+               communityTitle: "👥 Community Blog and Citizen Participation",
+               notificationsTitle: "🔔 Personalized Neighborhood Notifications",
+               chatHeader: "🤖 Municipal Assistant - Available in 4 languages",
+               welcomeMessage: "Hello! I'm your municipal virtual assistant. I can help you with information about services, procedures, events and tourism. How can I help you today?",
+               chatSendBtn: "Send",
+               createPostBtn: "✍️ Create New Post",
+               selectNeighborhoodTitle: "Select your neighborhood/area:",
+               notificationTypesTitle: "Notification types:",
+               saveNotificationsBtn: "💾 Save Preferences"
+           },
+           de: {
+               appTitle: "Pilar de la Horadada",
+               appSubtitle: "Offizielle Gemeinde-App",
+               navNews: "📰 Nachrichten",
+               navEvents: "📅 Veranstaltungen",
+               navMap: "🗺️ Lokale Karte",
+               navTourism: "🏖️ Tourismus",
+               navEmergency: "🚨 Notfall",
+               navChatbot: "💬 Anfragen",
+               navCommunity: "👥 Gemeinschaft",
+               navNotifications: "🔔 Benachrichtigungen",
+               newsTitle: "📰 Nachrichten und offizielle Mitteilungen",
+               eventsTitle: "📅 Veranstaltungskalender",
+               mapTitle: "🗺️ Karte lokaler Geschäfte und Dienstleistungen",
+               tourismTitle: "🏖️ Interaktiver Tourismusbereich",
+               emergencyTitle: "🚨 Notfallkontakte",
+               chatbotTitle: "💬 Mehrsprachiger virtueller Assistent",
+               communityTitle: "👥 Community-Blog und Bürgerbeteiligung",
+               notificationsTitle: "🔔 Personalisierte Stadtteil-Benachrichtigungen",
+               chatHeader: "🤖 Gemeindeassistent - Verfügbar in 4 Sprachen",
+               welcomeMessage: "Hallo! Ich bin Ihr virtueller Gemeindeassistent. Ich kann Ihnen mit Informationen zu Dienstleistungen, Verfahren, Veranstaltungen und Tourismus helfen. Wie kann ich Ihnen heute helfen?",
+               chatSendBtn: "Senden",
+               createPostBtn: "✍️ Neuen Beitrag erstellen",
+               selectNeighborhoodTitle: "Wählen Sie Ihr Viertel/Gebiet:",
+               notificationTypesTitle: "Benachrichtigungstypen:",
+               saveNotificationsBtn: "💾 Einstellungen speichern"
+           },
+           fr: {
+               appTitle: "Pilar de la Horadada",
+               appSubtitle: "App Municipale Officielle",
+               navNews: "📰 Actualités",
+               navEvents: "📅 Événements",
+               navMap: "🗺️ Carte Locale",
+               navTourism: "🏖️ Tourisme",
+               navEmergency: "🚨 Urgences",
+               navChatbot: "💬 Consultations",
+               navCommunity: "👥 Communauté",
+               navNotifications: "🔔 Alertes",
+               newsTitle: "📰 Actualités et Communications Officielles",
+               eventsTitle: "📅 Agenda des Événements et Activités",
+               mapTitle: "🗺️ Carte des Commerces Locaux et Services",
+               tourismTitle: "🏖️ Section Touristique Interactive",
+               emergencyTitle: "🚨 Contacts d'Urgence",
+               chatbotTitle: "💬 Assistant Virtuel Multilingue",
+               communityTitle: "👥 Blog Communautaire et Participation Citoyenne",
+               notificationsTitle: "🔔 Notifications Personnalisées par Quartier",
+               chatHeader: "🤖 Assistant Municipal - Disponible en 4 langues",
+               welcomeMessage: "Bonjour ! Je suis votre assistant virtuel municipal. Je peux vous aider avec des informations sur les services, démarches, événements et tourisme. Comment puis-je vous aider aujourd'hui ?",
+               chatSendBtn: "Envoyer",
+               createPostBtn: "✍️ Créer une Nouvelle Publication",
+               selectNeighborhoodTitle: "Sélectionnez votre quartier/zone :",
+               notificationTypesTitle: "Types de notifications :",
+               saveNotificationsBtn: "💾 Sauvegarder les Préférences"
+           }
+       };
+
+       let currentLanguage = 'es';
+       let selectedNeighborhood = '';
+
+       // Navigation functionality with loading
+       document.querySelectorAll('.nav-tab').forEach(tab => {
+           tab.addEventListener('click', function(e) {
+               e.preventDefault();
+               
+               // Show loading
+               showLoading();
+               
+               setTimeout(() => {
+                   // Remove active class from all tabs and sections
+                   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                   
+                   // Add active class to clicked tab
+                   this.classList.add('active');
+                   
+                   // Show corresponding section
+                   const sectionId = this.getAttribute('data-section');
+                   document.getElementById(sectionId).classList.add('active');
+                   
+                   // Hide loading
+                   hideLoading();
+               }, 300);
+           });
+       });
+
+       function showLoading() {
+           document.getElementById('loadingSpinner').style.display = 'block';
+       }
+
+       function hideLoading() {
+           document.getElementById('loadingSpinner').style.display = 'none';
+       }
+
+       // Language change functionality
+       function changeLanguage() {
+           const select = document.getElementById('languageSelect');
+           currentLanguage = select.value;
+           
+           // Save language preference
+           localStorage.setItem('preferredLanguage', currentLanguage);
+           
+           const t = translations[currentLanguage];
+           
+           // Update all text elements
+           Object.keys(t).forEach(key => {
+               const element = document.getElementById(key);
+               if (element) {
+                   element.textContent = t[key];
+               }
+           });
+           
+           // Update placeholder for chat input
+           const chatInput = document.getElementById('chatInput');
+           const placeholders = {
+               es: "Escribe tu consulta aquí...",
+               en: "Write your inquiry here...",
+               de: "Schreiben Sie hier Ihre Anfrage...",
+               fr: "Écrivez votre demande ici..."
+           };
+           chatInput.placeholder = placeholders[currentLanguage];
+       }
+
+       // Chatbot functionality with better UX
+       function sendMessage() {
+           const input = document.getElementById('chatInput');
+           const messages = document.getElementById('chatMessages');
+           
+           if (input.value.trim() === '') return;
+           
+           // Add user message
+           const userMessage = document.createElement('div');
+           userMessage.className = 'message user';
+           userMessage.textContent = input.value;
+           messages.appendChild(userMessage);
+           
+           // Clear input immediately
+           const userQuery = input.value;
+           input.value = '';
+           
+           // Show typing indicator
+           const typingMessage = document.createElement('div');
+           typingMessage.className = 'message bot';
+           typingMessage.innerHTML = '🤖 Escribiendo...';
+           messages.appendChild(typingMessage);
+           messages.scrollTop = messages.scrollHeight;
+           
+           // Simulate bot response
+           setTimeout(() => {
+               messages.removeChild(typingMessage);
+               
+               const botMessage = document.createElement('div');
+               botMessage.className = 'message bot';
+               
+               // Smart responses based on query
+               const smartResponse = generateSmartResponse(userQuery.toLowerCase(), currentLanguage);
+               botMessage.textContent = smartResponse;
+               
+               messages.appendChild(botMessage);
+               messages.scrollTop = messages.scrollHeight;
+           }, 1500);
+           
+           messages.scrollTop = messages.scrollHeight;
+       }
+
+       function generateSmartResponse(query, language) {
+           const responses = {
+               es: {
+                   horarios: "Los horarios del Ayuntamiento son: Lunes a Viernes de 8:00 a 15:00h. Para citas previas: 966 767 068",
+                   eventos: "Puedes ver todos los eventos en la sección 📅 Eventos. Próximamente: Festival de Cine CORTOPILAR",
+                   playas: "Nuestras playas de bandera azul están en Torre de la Horadada. ¡Perfectas para el verano!",
+                   turismo: "Visita la sección 🏖️ Turismo para info de Torre de la Horadada, Mil Palmeras y Pinar de Campoverde",
+                   default: "Gracias por tu consulta. Un técnico municipal se pondrá en contacto contigo en breve. ¿Hay algo más en lo que pueda ayudarte?"
+               },
+               en: {
+                   horarios: "Town Hall hours: Monday to Friday 8:00 AM to 3:00 PM. For appointments: 966 767 068",
+                   eventos: "Check all events in the 📅 Events section. Coming soon: CORTOPILAR Film Festival",
+                   playas: "Our blue flag beaches are in Torre de la Horadada. Perfect for summer!",
+                   turismo: "Visit the 🏖️ Tourism section for info about Torre de la Horadada, Mil Palmeras and Pinar de Campoverde",
+                   default: "Thank you for your inquiry. A municipal technician will contact you shortly. Is there anything else I can help you with?"
+               },
+               de: {
+                   horarios: "Rathaus-Öffnungszeiten: Montag bis Freitag 8:00 bis 15:00 Uhr. Für Termine: 966 767 068",
+                   eventos: "Alle Veranstaltungen in der Sektion 📅 Veranstaltungen. Demnächst: CORTOPILAR Filmfestival",
+                   playas: "Unsere blaue Flagge Strände sind in Torre de la Horadada. Perfekt für den Sommer!",
+                   turismo: "Besuchen Sie die 🏖️ Tourismus-Sektion für Infos über Torre de la Horadada, Mil Palmeras und Pinar de Campoverde",
+                   default: "Vielen Dank für Ihre Anfrage. Ein städtischer Techniker wird sich in Kürze mit Ihnen in Verbindung setzen. Kann ich Ihnen sonst noch helfen?"
+               },
+               fr: {
+                   horarios: "Horaires de la mairie : Lundi au Vendredi de 8h00 à 15h00. Pour rendez-vous : 966 767 068",
+                   eventos: "Consultez tous les événements dans la section 📅 Événements. Bientôt : Festival de Cinéma CORTOPILAR",
+                   playas: "Nos plages pavillon bleu sont à Torre de la Horadada. Parfaites pour l'été !",
+                   turismo: "Visitez la section 🏖️ Tourisme pour des infos sur Torre de la Horadada, Mil Palmeras et Pinar de Campoverde",
+                   default: "Merci pour votre demande. Un technicien municipal vous contactera sous peu. Y a-t-il autre chose pour laquelle je puisse vous aider ?"
+               }
+           };
+
+           const langResponses = responses[language];
+           
+           if (query.includes('horario') || query.includes('hours') || query.includes('öffnungszeiten') || query.includes('horaires')) {
+               return langResponses.horarios;
+           } else if (query.includes('evento') || query.includes('event') || query.includes('veranstaltung') || query.includes('événement')) {
+               return langResponses.eventos;
+           } else if (query.includes('playa') || query.includes('beach') || query.includes('strand') || query.includes('plage')) {
+               return langResponses.playas;
+           } else if (query.includes('turismo') || query.includes('tourism') || query.includes('tourismus') || query.includes('tourisme')) {
+               return langResponses.turismo;
+           } else {
+               return langResponses.default;
+           }
+       }
+
+       // Emergency call functionality with confirmation
+       function callEmergency(number) {
+           const confirmMessages = {
+               es: `¿Llamar al ${number}?`,
+               en: `Call ${number}?`,
+               de: `${number} anrufen?`,
+               fr: `Appeler ${number}?`
+           };
+           
+           if (confirm(confirmMessages[currentLanguage])) {
+               // Vibrate if supported
+               if ('vibrate' in navigator) {
+                   navigator.vibrate([200, 100, 200]);
+               }
+               
+               // In a real app, this would initiate a phone call
+               window.location.href = `tel:${number}`;
+           }
+       }
+
+       // Tourism detail functionality with haptic feedback
+       function showTourismDetail(location) {
+           // Vibrate if supported
+           if ('vibrate' in navigator) {
+               navigator.vibrate(50);
+           }
+           
+           const details = {
+               es: {
+                   torre: "Torre de la Horadada: Descubre la histórica torre del siglo XVI, disfruta de nuestras playas de bandera azul y saborea la gastronomía mediterránea en nuestros restaurantes frente al mar.",
+                   mil: "Mil Palmeras: Zona residencial premium con hermosa playa familiar, centro comercial y todos los servicios para una estancia perfecta.",
+                   pinar: "Pinar de Campoverde: Entorno natural único con campo de golf, urbanización tranquila ideal para el descanso y actividades al aire libre."
+               },
+               en: {
+                   torre: "Torre de la Horadada: Discover the historic 16th century tower, enjoy our blue flag beaches and savor Mediterranean cuisine in our seafront restaurants.",
+                   mil: "Mil Palmeras: Premium residential area with beautiful family beach, shopping center and all services for a perfect stay.",
+                   pinar: "Pinar de Campoverde: Unique natural environment with golf course, quiet urbanization ideal for rest and outdoor activities."
+               },
+               de: {
+                   torre: "Torre de la Horadada: Entdecken Sie den historischen Turm aus dem 16. Jahrhundert, genießen Sie unsere blaue Flagge Strände und mediterrane Küche in unseren Restaurants am Meer.",
+                   mil: "Mil Palmeras: Premium Wohngegend mit schönem Familienstrand, Einkaufszentrum und allen Dienstleistungen für einen perfekten Aufenthalt.",
+                   pinar: "Pinar de Campoverde: Einzigartige natürliche Umgebung mit Golfplatz, ruhige Urbanisation ideal für Erholung und Outdoor-Aktivitäten."
+               },
+               fr: {
+                   torre: "Torre de la Horadada: Découvrez la tour historique du XVIe siècle, profitez de nos plages pavillon bleu et savourez la cuisine méditerranéenne dans nos restaurants en bord de mer.",
+                   mil: "Mil Palmeras: Zone résidentielle premium avec belle plage familiale, centre commercial et tous les services pour un séjour parfait.",
+                   pinar: "Pinar de Campoverde: Environnement naturel unique avec terrain de golf, urbanisation tranquille idéale pour le repos et les activités de plein air."
+               }
+           };
+           
+           alert(details[currentLanguage][location]);
+       }
+
+       // Neighborhood selection with visual feedback
+       function selectNeighborhood(neighborhood) {
+           selectedNeighborhood = neighborhood;
+           
+           // Vibrate if supported
+           if ('vibrate' in navigator) {
+               navigator.vibrate(50);
+           }
+           
+           // Remove previous selection
+           document.querySelectorAll('.neighborhood-card').forEach(card => {
+               card.classList.remove('selected');
+           });
+           
+           // Add selection to clicked card
+           event.target.closest('.neighborhood-card').classList.add('selected');
+       }
+
+       // Save notification settings with feedback
+       function saveNotificationSettings() {
+           if (!selectedNeighborhood) {
+               const messages = {
+                   es: 'Por favor, selecciona tu barrio primero.',
+                   en: 'Please select your neighborhood first.',
+                   de: 'Bitte wählen Sie zuerst Ihr Viertel.',
+                   fr: 'Veuillez d\'abord sélectionner votre quartier.'
+               };
+               alert(messages[currentLanguage]);
+               return;
+           }
+           
+           // Save to localStorage
+           const settings = {
+               neighborhood: selectedNeighborhood,
+               notifications: Array.from(document.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.nextSibling.textContent.trim())
+           };
+           localStorage.setItem('notificationSettings', JSON.stringify(settings));
+           
+           // Vibrate if supported
+           if ('vibrate' in navigator) {
+               navigator.vibrate([100, 50, 100]);
+           }
+           
+           const successMessages = {
+               es: `Preferencias guardadas para ${selectedNeighborhood}. Recibirás notificaciones personalizadas.`,
+               en: `Preferences saved for ${selectedNeighborhood}. You will receive personalized notifications.`,
+               de: `Einstellungen für ${selectedNeighborhood} gespeichert. Sie erhalten personalisierte Benachrichtigungen.`,
+               fr: `Préférences sauvegardées pour ${selectedNeighborhood}. Vous recevrez des notifications personnalisées.`
+           };
+           
+           alert(successMessages[currentLanguage]);
+       }
+
+       // Create post functionality
+       function createPost() {
+           const messages = {
+               es: 'Funcionalidad de creación de posts. En la versión completa, esto abriría un formulario de creación.',
+               en: 'Post creation functionality. In the full version, this would open a creation form.',
+               de: 'Post-Erstellungsfunktion. In der Vollversion würde dies ein Erstellungsformular öffnen.',
+               fr: 'Fonctionnalité de création de posts. Dans la version complète, cela ouvrirait un formulaire de création.'
+           };
+           alert(messages[currentLanguage]);
+       }
+
+       // Chat input Enter key support
+       document.getElementById('chatInput').addEventListener('keypress', function(e) {
+           if (e.key === 'Enter') {
+               e.preventDefault();
+               sendMessage();
+           }
+       });
+
+       // Load saved preferences
+       function loadSavedPreferences() {
+           // Load language preference
+           const savedLanguage = localStorage.getItem('preferredLanguage');
+           if (savedLanguage && translations[savedLanguage]) {
+               currentLanguage = savedLanguage;
+               document.getElementById('languageSelect').value = savedLanguage;
+               changeLanguage();
+           }
+
+           // Load notification settings
+           const savedSettings = localStorage.getItem('notificationSettings');
+           if (savedSettings) {
+               try {
+                   const settings = JSON.parse(savedSettings);
+                   selectedNeighborhood = settings.neighborhood;
+                   
+                   // Restore neighborhood selection
+                   document.querySelectorAll('.neighborhood-card').forEach(card => {
+                       if (card.onclick.toString().includes(selectedNeighborhood)) {
+                           card.classList.add('selected');
+                       }
+                   });
+               } catch (e) {
+                   console.error('Error loading saved settings:', e);
+               }
+           }
+       }
+
+       // Initialize app
+       document.addEventListener('DOMContentLoaded', function() {
+           console.log('PWA Municipal Pilar de la Horadada iniciada');
+           loadSavedPreferences();
+           updateOnlineStatus();
+           
+           // Show install prompt after 3 seconds if not installed
+           setTimeout(() => {
+               if (deferredPrompt && !isInstalled) {
+                   showInstallPrompt();
+               }
+           }, 3000);
+       });
+
+       // Handle app shortcuts (if added to home screen)
+       if ('navigator' in window && 'standalone' in window.navigator) {
+           if (window.navigator.standalone) {
+               console.log('App running in standalone mode');
+           }
+       }
+   </script>
+</body>
+</html>
